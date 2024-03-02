@@ -1,27 +1,12 @@
 import numpy as np
-from sklearn.datasets import make_regression
 import matplotlib.pyplot as plt
 
-# Create a dataset
-x, y = make_regression(n_samples=100, n_features=1, noise=10)
-y = y.reshape(y.shape[0], 1)
-
-#matrice X
-
-X = np.hstack([x, np.ones(x.shape)])
-theta = np.random.randn(2, 1)
-
-#model
 def model(X, theta):
     return X.dot(theta)
-
-#cost function
 
 def cost_function(X, y, theta):
     m = len(y)
     return 1/(2*m) * np.sum((model(X, theta) - y)**2)
-
-#gradient descent
 
 def grad(X, y, theta):
     m = len(y)
@@ -41,16 +26,28 @@ def r2_score(y, pred):
     return 1 - u/v
 
 
-theta_final, cost_history = gradient_descent(X, y, theta, 0.01, 1000)
+def main():
+    data = np.genfromtxt('./data.csv', delimiter=',')
+    x = data[:, 0]
+    y = data[:, 1]
+    x = x.reshape(-1, 1)
+    y = y.reshape(-1, 1)
 
-prediction = model(X, theta_final)
+    #matrice X
+    mean_x = np.mean(x, axis=0)
+    std_x = np.std(x, axis=0)
+    x_normalized = (x - mean_x) / std_x
 
-coef_determination = r2_score(y, prediction)
+    X = np.hstack([x_normalized, np.ones(x.shape)])
+    theta = np.zeros((2, 1))
+    theta_final, cost_history = gradient_descent(X, y, theta, 0.05, 1000)
+    print("Accuracy : ", r2_score(y, model(X, theta_final)))
+    plt.scatter(x, y)
+    plt.plot(x, model(X, theta_final), c='r')
+    plt.show()
+    np.save('finalTheta.npy', theta_final)
+    np.save('mean_x.npy', mean_x)
+    np.save('std_x.npy', std_x)
 
-print(coef_determination)
-
-#scatter new data
-# plt.scatter(x, y)
-# plt.plot(x, prediction, c='r')
-# plt.plot(range(1000), cost_history, c='g')
-# plt.show()
+if __name__ == "__main__":
+    main()
